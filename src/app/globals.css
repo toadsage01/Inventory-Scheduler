@@ -1,0 +1,261 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: "Avenir Next", Avenir, var(--font-avenir-fallback), var(--font-geist-sans), system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-bright: var(--bright);
+  --color-deep: var(--deep);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-teal-brand: var(--teal-brand);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+}
+
+/*
+ * Light mode: a warm
+ * pink ambient sheet (with two soft pink blobs), one big
+ * floating white app card, the studio red for everything active (view
+ * pill, today's circle, the now-capsule, Save), and pastel event cards.
+ * The palette is tokenised: swap the hex values here and every surface
+ * follows. (--teal-brand is kept as the name of the brand accent for
+ * compatibility; it carries the studio red now.)
+ */
+:root {
+  --radius: 0.75rem;
+  --background: #f1e4e8;
+  --foreground: #241f21;
+  --card: #ffffff;
+  --card-foreground: #241f21;
+  --popover: #ffffff;
+  --popover-foreground: #241f21;
+  --primary: #e73b45;
+  --primary-foreground: #ffffff;
+  --secondary: #f3eaed;
+  --secondary-foreground: #332b2e;
+  --muted: #f3eaed;
+  --muted-foreground: #96828a;
+  --accent: #fbe3e5;
+  --accent-foreground: #ab1f2b;
+  --destructive: #c12830;
+  --bright: #ef5d66;
+  --deep: #8f1d26;
+  /* The studio red — selected days, rings, the now-capsule. */
+  --teal-brand: #e73b45;
+  --border: #e6d6da;
+  --input: #e6d6da;
+  --ring: #e73b45;
+  --chart-1: #3e97d8;
+  --chart-2: #de9a45;
+  --chart-3: #8e7cc9;
+  --chart-4: #46a875;
+  --chart-5: #d967a9;
+  --sidebar: #f7ecee;
+  --sidebar-foreground: #241f21;
+  --sidebar-primary: #e73b45;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f3eaed;
+  --sidebar-accent-foreground: #241f21;
+  --sidebar-border: #e6d6da;
+  --sidebar-ring: #e73b45;
+  --grid-line: #eee0e4;
+  --shadow-card: 0 1px 2px rgba(122, 48, 58, 0.08), 0 10px 26px -12px rgba(122, 48, 58, 0.28);
+  --shadow-lift: 0 2px 8px rgba(122, 48, 58, 0.16), 0 18px 40px -14px rgba(122, 48, 58, 0.36);
+}
+
+/*
+ * Dark mode — warm charcoal instead of plain black, same studio red
+ * lifted for contrast. Borders and grid lines stay brighter here so the
+ * week grid never melts into the background (the round-three complaint).
+ */
+.dark {
+  --background: #170c0f;
+  --foreground: #efe7ea;
+  --card: #221215;
+  --card-foreground: #efe7ea;
+  --popover: #291518;
+  --popover-foreground: #efe7ea;
+  --primary: #f0646d;
+  --primary-foreground: #ffffff;
+  --secondary: #2d1c1f;
+  --secondary-foreground: #efe7ea;
+  --muted: #2d1c1f;
+  --muted-foreground: #a8929a;
+  --accent: #3d2126;
+  --accent-foreground: #f0919a;
+  --destructive: #ef5d66;
+  --bright: #f4737b;
+  --deep: #c12830;
+  --teal-brand: #f0646d;
+  --border: #3b2a2e;
+  --input: #463136;
+  --ring: #f0646d;
+  --chart-1: #6db3e8;
+  --chart-2: #e8b06a;
+  --chart-3: #a796dd;
+  --chart-4: #6cc294;
+  --chart-5: #e08fbc;
+  --sidebar: #1d1013;
+  --sidebar-foreground: #efe7ea;
+  --sidebar-primary: #f0646d;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #2d1c1f;
+  --sidebar-accent-foreground: #efe7ea;
+  --sidebar-border: #3b2a2e;
+  --sidebar-ring: #f0646d;
+  --grid-line: #2f2024;
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.32), 0 10px 26px -12px rgba(0, 0, 0, 0.5);
+  --shadow-lift: 0 2px 8px rgba(0, 0, 0, 0.44), 0 18px 40px -14px rgba(0, 0, 0, 0.62);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+  /* Comfortable density. The calendar carries the big, 140%-ratio type —
+     day numbers, titles and times are sized explicitly in the components
+     — while the chrome stays calm. */
+  @media (min-width: 1024px) {
+    html {
+      font-size: 112.5%;
+    }
+  }
+  body {
+    @apply text-foreground;
+    font-size: 16px;
+    /* The ambient sheet: warm pink wash + the two soft blobs
+       (top-right and bottom-left), fixed so the card floats above it. */
+    background-color: var(--background);
+    background-image:
+      radial-gradient(46rem 32rem at 88% -6%, rgba(199, 88, 106, 0.28), transparent 62%),
+      radial-gradient(40rem 30rem at -10% 110%, rgba(178, 70, 88, 0.24), transparent 62%),
+      linear-gradient(155deg, #f2e6ea 0%, #e3ccd3 100%);
+    background-attachment: fixed;
+  }
+  .dark body {
+    background-image:
+      radial-gradient(46rem 32rem at 88% -6%, rgba(168, 44, 60, 0.3), transparent 62%),
+      radial-gradient(40rem 30rem at -10% 110%, rgba(150, 38, 52, 0.28), transparent 62%),
+      linear-gradient(155deg, #1c0d10 0%, #120a0c 100%);
+  }
+  ::selection {
+    background: rgba(231, 59, 69, 0.16);
+  }
+  .dark ::selection {
+    background: rgba(239, 93, 102, 0.3);
+  }
+}
+
+@layer utilities {
+  .brand-glow {
+    background-image: radial-gradient(ellipse 70% 50% at 50% -8%, rgba(231, 59, 69, 0.1), transparent 70%);
+  }
+  .dark .brand-glow {
+    background-image: radial-gradient(ellipse 70% 50% at 50% -8%, rgba(239, 93, 102, 0.16), transparent 70%);
+  }
+  .brand-gradient {
+    background-image: linear-gradient(120deg, #e73b45, #a91e28);
+  }
+  .brand-text {
+    background-image: linear-gradient(120deg, #e73b45, #ef5d66);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 8px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  /* Safe-area helper for the fixed mobile bottom nav */
+  .pb-safe-nav {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  /* The hover vocabulary from the reference: cards and chips lift a hair,
+     shadows bloom, everything settles in ~180ms. */
+  .card-shadow {
+    box-shadow: var(--shadow-card);
+  }
+  .card-hover {
+    box-shadow: var(--shadow-card);
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+  }
+  .card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lift);
+  }
+  .chip-hover {
+    transition: transform 0.16s ease, box-shadow 0.16s ease, filter 0.16s ease;
+  }
+  .chip-hover:hover {
+    transform: translateY(-1px) scale(1.015);
+    filter: brightness(1.04);
+    box-shadow: 0 4px 12px -2px rgba(163, 106, 116, 0.4);
+  }
+  .dark .chip-hover:hover {
+    box-shadow: 0 3px 12px -2px rgba(0, 0, 0, 0.5);
+  }
+  /* The multi-day thread: a fine connected line between rounded tabs. */
+  .thread-line {
+    transition: height 0.18s ease, opacity 0.18s ease;
+  }
+  /* The floating app frame — the single white card on the ambient sheet. */
+  .app-frame {
+    background: var(--card);
+    border-radius: 22px;
+    box-shadow: var(--shadow-lift);
+  }
+  @media (max-width: 1023px) {
+    .app-frame {
+      border-radius: 16px;
+    }
+  }
+}

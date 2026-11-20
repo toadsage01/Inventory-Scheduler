@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+
+# Next.js
+.next/
+out/
+next-env.d.ts
+*.tsbuildinfo
+
+# Environment and secrets
+.env
+.env*.local
+*.pem
+*.key
+
+# Local database
+db/*.db
+db/*.db-journal
+
+# Server runtime — docker-compose bind mount and pg_dump output
+data/
+backups/
+
+# Logs and OS noise
+*.log
+.DS_Store
+
+# Local SQLite store used by prisma (file:./db/custom.db resolves under prisma/)
+prisma/db/
+
+# Local preview database (sandbox-only, never ship)
+prisma/*.db
+prisma/*.db-journal

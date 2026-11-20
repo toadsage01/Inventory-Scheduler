@@ -1,0 +1,8 @@
+node_modules
+.next
+db
+data
+backups
+*.log
+.git
+.env

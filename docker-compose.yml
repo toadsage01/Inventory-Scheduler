@@ -1,0 +1,57 @@
+# Gear & studio booking, containerised. Postgres lives in its own service
+# writing to ./data/pg on the host, so bookings survive restarts and image
+# updates. Secrets come from .env next to this file — never commit that file.
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: "${POSTGRES_USER:-scheduler}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}"
+      POSTGRES_DB: "${POSTGRES_DB:-scheduler}"
+    volumes:
+      - ./data/pg:/var/lib/postgresql/data
+    # 5432 is deliberately NOT published to the host — nothing outside the
+    # compose network can reach the database. Back up with:
+    #   docker compose exec db pg_dump -U "$POSTGRES_USER" "$POSTGRES_DB" > backup.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-scheduler}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  scheduler:
+    build: .
+    # Also tagged so a prebuilt image tarball (docker save / docker load)
+    # can replace the build: `docker load < scheduler-image.tar.gz` then
+    # `docker compose up -d` without --build.
+    # Bump this tag on every code change BEFORE rebuilding — it makes a
+    # stale rebuild obvious in `docker compose ps` (1.0 = the first deploy).
+    image: inventory-scheduler:1.0
+    # Pass every non-database variable through (SMTP_*, CRON_SECRET,
+    # NEXTAUTH_SESSION_DAYS, REMINDER_WORKER...). The environment block below
+    # wins over this file where both define the same key.
+    env_file: .env
+    environment:
+      # Compose rewrites the in-container address to the db service; the
+      # DATABASE_URL line in .env is for local (non-Docker) runs and is
+      # overridden here.
+      DATABASE_URL: "postgresql://${POSTGRES_USER:-scheduler}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-scheduler}?schema=public"
+      NEXTAUTH_SECRET: "${NEXTAUTH_SECRET:?set NEXTAUTH_SECRET in .env}"
+      NEXTAUTH_URL: "${NEXTAUTH_URL:-http://localhost:3000}"
+    ports:
+      # Loopback by default: put a TLS reverse proxy (Caddy/nginx) in front
+      # and it forwards to 3000. To expose the app directly instead (home
+      # network, no proxy), set BIND_HOST=0.0.0.0 in .env.
+      - "${BIND_HOST:-127.0.0.1}:3000:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/api/bootstrap >/dev/null 2>&1 || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+    restart: unless-stopped

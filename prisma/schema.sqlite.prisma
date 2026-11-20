@@ -1,0 +1,178 @@
+// SQLite mirror of schema.prisma — same models, file-based storage.
+// For hosts without a database server (a VPS with no Postgres, a NAS, a
+// laptop). Point DATABASE_URL at a file and switch commands to the
+// --schema variants, e.g.:
+//   npx prisma generate --schema prisma/schema.sqlite.prisma
+//   npx prisma db push --schema prisma/schema.sqlite.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique // permanent — created once, never changed
+  name         String
+  passwordHash String
+  role         String   @default("MEMBER") // ADMIN | LEAD | MEMBER
+  teamId       String?
+  team         Team?    @relation(fields: [teamId], references: [id])
+  pfp          String? // small data-URL portrait, drawn as a sticker in the app
+
+  // Google sign-in + calendar sync. The refresh token lets the server
+  // mirror bookings into the person's own "Praper Scheduler" calendar.
+  googleId           String?
+  googleAccessToken  String?
+  googleRefreshToken String?
+  googleTokenExpires DateTime?
+
+  // Fine-grained powers an admin can hand out per person.
+  canManageAssets   Boolean @default(false)
+  canManageBookings Boolean @default(false)
+  canManagePeople   Boolean @default(false)
+  canManageSettings Boolean @default(false)
+
+  // Personal notification choices.
+  notifyOnAdded    Boolean @default(true)
+  notifyReminder   Boolean @default(true)
+
+  // Which view the calendar opens in for this person (year|month|week|day).
+  defaultView      String  @default("week")
+
+  ownedBookings    Booking[]            @relation("BookingOwner")
+  participations   BookingParticipant[]
+  calendarLinks    CalendarLink[]
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+}
+
+model Team {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  users     User[]
+  // Soft delete: the team vanishes from every list but stays restorable
+  // from the admin Trash. Null = alive.
+  deletedAt    DateTime?
+  deletedByName String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Asset {
+  id        String   @id @default(cuid())
+  name      String
+  category  String   @default("General") // Camera, Lens, Studio Room, …
+  tag       String?
+  notes     String?
+  active    Boolean  @default(true)
+  // Soft delete: restorable from the admin Trash. Null = alive.
+  deletedAt    DateTime?
+  deletedByName String?
+  bookings  BookingAsset[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model BookingType {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  color     String   @default("#f59e0b")
+  sortOrder Int      @default(0)
+  // Soft delete: restorable from the admin Trash. Null = alive.
+  deletedAt    DateTime?
+  deletedByName String?
+  bookings  Booking[]
+  createdAt DateTime @default(now())
+}
+
+model Booking {
+  id      String  @id @default(cuid())
+  title   String
+  typeId  String?
+  type    BookingType? @relation(fields: [typeId], references: [id])
+  ownerId String
+  owner   User    @relation("BookingOwner", fields: [ownerId], references: [id])
+  // Local wall-clock stamps ("YYYY-MM-DDTHH:mm"), no timezone suffix.
+  // Spans may cross midnight freely — a three-day shoot is just a wider
+  // string range, and overlap stays a plain string comparison.
+  start   String
+  end     String
+  notes   String?
+  // Optional colour override (#rrggbb) picked in the booking dialog; null
+  // falls back to the booking type's colour. Bars, dots and threads paint
+  // with it, so overlapping bookings stay tellable apart at a glance.
+  color   String?
+  // Soft delete: a cancelled booking disappears from every calendar and
+  // list, but an admin can restore it from the Trash. Null = alive.
+  deletedAt    DateTime?
+  deletedByName String?
+  assets  BookingAsset[]
+  participants BookingParticipant[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([start, end])
+}
+
+model BookingAsset {
+  id        String  @id @default(cuid())
+  bookingId String
+  booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  assetId   String
+  asset     Asset   @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  @@unique([bookingId, assetId])
+  @@index([assetId])
+}
+
+model BookingParticipant {
+  id        String  @id @default(cuid())
+  bookingId String
+  booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([bookingId, userId])
+  @@index([userId])
+}
+
+model Setting {
+  key   String @id // org | booking | notifications | security
+  value String // JSON blob
+}
+
+model NotificationLog {
+  id        String   @id @default(cuid())
+  kind      String // ADDED | CANCELLED | REMINDER | TEST
+  bookingId String?
+  userId    String?
+  toEmail   String
+  subject   String
+  ok        Boolean
+  error     String?
+  dedupeKey String?  @unique // one reminder per person per window per booking
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}
+
+// One Google Calendar event per person per booking. Keeps the sync
+// idempotent — updates and cancellations edit the same event in place
+// instead of piling up duplicates in people's calendars.
+model CalendarLink {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bookingId  String
+  calendarId String
+  eventId    String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([userId, bookingId])
+  @@index([bookingId])
+}
